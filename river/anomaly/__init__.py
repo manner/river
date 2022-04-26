@@ -11,7 +11,7 @@ and 1s.
 """
 from .base import AnomalyDetector
 from .hst import HalfSpaceTrees
-from .mstream import MStream
+from .mstream.mstream import MStream
 from .svm import OneClassSVM
 from .threshold import ConstantThresholder, QuantileThresholder
 
