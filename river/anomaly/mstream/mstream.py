@@ -17,7 +17,11 @@ class MStream(AnomalyDetector):
     """
 
     def __init__(self, number_buckets=1024, factor=0.8):
-        self.record_hash = RecordHash()
+        # is_categorical is just a vector that says True if a feature is categorical, and false if it's numerical
+        # this assumes an entry will always have the same order in the features
+        # ex. [True, False, False, True, False]
+        is_categorical = [True, False, False, True, False]
+        self.record_hash = RecordHash(number_buckets, is_categorical)
         self.feature_hash = FeatureHash(number_buckets)
         self.factor = factor
         self.is_empty = True
@@ -35,6 +39,6 @@ class MStream(AnomalyDetector):
 
     def score_one(self, x):
         ts = x.get_timestamp()  # not sure how to get timestamp from observation
-        score = self.record_hash.get_count(x, ts)
+        score = self.record_hash.get_count() # no params for now, working on this
         score += self.feature_hash.get_count(x, ts)
         return log(1 + score)
