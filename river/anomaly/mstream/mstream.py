@@ -39,6 +39,6 @@ class MStream(AnomalyDetector):
 
     def score_one(self, x):
         ts = x.get_timestamp()  # not sure how to get timestamp from observation
-        score = self.record_hash.get_count() # no params for now, working on this
+        score = self.record_hash.get_count(x, ts)  # no params for now, working on this
         score += self.feature_hash.get_count(x, ts)
         return log(1 + score)

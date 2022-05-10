@@ -4,9 +4,10 @@ import random
 
 # This is directly copied from the cpp implementation
 # I don't know exactly where this function is coming from, as it's not in the paper
+# TODO: This code shouldn't be duplicated in both feature and record hash
 
 
-def counts_to_anom(self, tot, cur, cur_t):
+def counts_to_anom(tot, cur, cur_t):
     cur_mean = tot / cur_t
     sqerr = pow(max(0, cur - cur_mean), 2)
     return sqerr / cur_mean + sqerr / (cur_mean * max(1, cur_t - 1))
