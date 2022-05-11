@@ -114,3 +114,4 @@ package.json
 
 # ASV
 benchmarks/.asv
+river/test_data/*
