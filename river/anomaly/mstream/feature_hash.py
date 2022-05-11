@@ -60,7 +60,7 @@ class FeatureCategorialHash():
             return resid
 
     def insert(self, x):
-        for i, (_, feature) in enumerate(x.items()):
+        for i, feature in enumerate(x):
             for j in range(self.number_hash_functions):
                 bucket = self.hash(feature, j)
                 self.count[i][j][bucket] += 1
@@ -68,7 +68,7 @@ class FeatureCategorialHash():
 
     def get_count(self, x, t):
         result = 0
-        for i, (_, feature) in enumerate(x.items()):
+        for i, feature in enumerate(x):
             min_count = float('inf')
             min_total_count = float('inf')
             for j in range(self.number_hash_functions):
@@ -99,7 +99,7 @@ class FeatureNumericalHash():
 
     def insert(self, x):
         first = True
-        for i, (_, feature) in enumerate(x.items()):
+        for i, feature in enumerate(x):
             current_feature = log10(1 + feature)
             if first:
                 first = False
@@ -115,12 +115,13 @@ class FeatureNumericalHash():
                     current_feature = self.normalize(current_feature, min_feature, max_feature)
 
             bucket = self.hash(current_feature)
+            print(i, bucket, self.number_features, current_feature)
             self.count[i][bucket] += 1
             self.total_count[i][bucket] += 1
 
     def get_count(self, x, t):
         result = 0
-        for i, (_, feature) in enumerate(x.items()):
+        for i, feature in enumerate(x):
             bucket = self.hash(feature)
             result += counts_to_anom(self.total_count[i][bucket], self.count[i][bucket], t)
         return result
