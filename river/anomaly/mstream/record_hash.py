@@ -11,18 +11,18 @@ def counts_to_anom(tot, cur, cur_t):
 
 
 class RecordHash():
-    def __init__(self, is_categorical, num_buckets, number_hash_functions):
+    def __init__(self, is_categorical, number_buckets, number_hash_functions):
         self.is_categorical = is_categorical
         self.is_numerical = [not feature for feature in is_categorical]
         # self.num_rows = num_rows number of hash functions, we will just use 2 for now
-        self.num_buckets = num_buckets
+        self.number_buckets = number_buckets
         self.number_numerical_features = len(self.is_numerical)
         self.number_categorical_features = len(self.is_categorical)
         self.number_hash_functions = number_hash_functions  # num_rows in original code
         self.numerical_hash = RecordNumericalHash(
-            self.number_hash_functions, self.num_buckets, self.number_numerical_features)
+            self.number_hash_functions, self.number_buckets, self.number_numerical_features)
         self.categorical_hash = RecordCategorialHash(
-            self.number_hash_functions, self.num_buckets, self.number_categorical_features)
+            self.number_hash_functions, self.number_buckets, self.number_categorical_features)
         self.clear()
 
     def insert(self, x):
@@ -34,7 +34,7 @@ class RecordHash():
             bucket_categorical = self.categorical_hash.hash(x_categorical, i)
             bucket_numerical = self.numerical_hash.hash(x_numerical, i)
 
-            bucket = (bucket_categorical + bucket_numerical) % self.num_buckets
+            bucket = (bucket_categorical + bucket_numerical) % self.number_buckets
             self.count[i][bucket] += 1
             self.total_count[i][bucket] += 1
 
@@ -49,7 +49,7 @@ class RecordHash():
         for i in range(self.number_hash_functions):
             bucket_categorical = self.categorical_hash.hash(x_categorical, i)
             bucket_numerical = self.numerical_hash.hash(x_numerical, i)
-            bucket = (bucket_categorical + bucket_numerical) % self.num_buckets
+            bucket = (bucket_categorical + bucket_numerical) % self.number_buckets
 
             min_count = min(min_count, self.count[i][bucket])
             min_total_count = min(min_total_count, self.total_count[i][bucket])
@@ -57,22 +57,22 @@ class RecordHash():
         return counts_to_anom(min_total_count, min_count, t)
 
     def clear(self):
-        self.count = [[0 for _ in range(self.num_buckets)]
+        self.count = [[0 for _ in range(self.number_buckets)]
                       for _ in range(self.number_hash_functions)]
-        self.total_count = [[0 for _ in range(self.num_buckets)]
+        self.total_count = [[0 for _ in range(self.number_buckets)]
                             for _ in range(self.number_hash_functions)]
 
     def lower(self, factor):
         for i in range(self.number_hash_functions):
-            for j in range(self.num_buckets):
+            for j in range(self.number_buckets):
                 self.count[i][j] *= factor
 
 
 class RecordCategorialHash():
-    def __init__(self, number_hash_functions, num_buckets, number_categorical_features):
+    def __init__(self, number_hash_functions, number_buckets, number_categorical_features):
         self.cat_recordhash = []
         self.number_categorical_features = number_categorical_features
-        self.num_buckets = num_buckets
+        self.number_buckets = number_buckets
         self.number_hash_functions = number_hash_functions
         for i in range(self.number_categorical_features):
             self.cat_recordhash.append({})
@@ -88,20 +88,20 @@ class RecordCategorialHash():
             else:
                 current_category[key] = 1
             value = current_category[key]
-            resid = (resid + key * value) % self.num_buckets
-        return resid + (self.num_buckets if resid < 0 else 0)
+            resid = (resid + key * value) % self.number_buckets
+        return resid + (self.number_buckets if resid < 0 else 0)
 
     def clear(self):
-        self.categorial_count = [[0 for _ in range(self.num_buckets)]
-                                 for _ in range(self.number_features)]
+        self.categorial_count = [[0 for _ in range(self.number_buckets)]
+                                 for _ in range(self.number_categorical_features)]
 
 
 class RecordNumericalHash():
-    def __init__(self, number_hash_functions, num_buckets, number_numerical_features):
+    def __init__(self, number_hash_functions, number_buckets, number_numerical_features):
         self.number_numerical_features = number_numerical_features
-        self.num_buckets = num_buckets
+        self.number_buckets = number_buckets
         self.number_hash_functions = number_hash_functions  # num_rows in original code
-        self.k = math.ceil(math.log2(self.num_buckets))
+        self.k = math.ceil(math.log2(self.number_buckets))
         self.rand_vectors = np.random.normal(0, 1, size=(self.k, number_numerical_features))
         self.clear()
 

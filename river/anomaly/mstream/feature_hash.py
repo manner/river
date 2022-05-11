@@ -14,12 +14,14 @@ def counts_to_anom(tot, cur, cur_t):
 
 
 class FeatureHash():
-    def __init__(self, number_buckets, seed=datetime.now()):
+    def __init__(self, number_buckets, number_hash_functions, seed=datetime.now()):
         number_numerical_features = 5  # tbd
         number_categorical_features = 5  # tbd
-        self.numerical_hash = FeatureNumericalHash(number_buckets, number_numerical_features)
+        self.number_hash_functions = number_hash_functions
+        self.numerical_hash = FeatureNumericalHash(
+            number_buckets, number_numerical_features)
         self.categorial_hash = FeatureCategorialHash(
-            number_buckets, number_categorical_features, seed)
+            number_buckets, self.number_hash_functions, number_categorical_features, seed)
 
     def insert(self, x):
         # categorial hash
@@ -38,18 +40,19 @@ class FeatureHash():
 
 
 class FeatureCategorialHash():
-    def __init__(self, number_buckets, number_features, seed):
+    def __init__(self, number_buckets, number_hash_functions, number_features, seed):
         random.seed(seed)
         self.number_buckets = number_buckets
+        self.number_hash_functions = number_hash_functions
         self.number_features = number_features
         self.init_hash()
         self.clear()
 
     def init_hash(self):
         self.hash1 = [random.randrange(1, self.number_buckets - 1)
-                      for _ in range(self.number_features)]  # [1, p-1]
+                      for _ in range(self.number_hash_functions)]  # [1, p-1]
         self.hash2 = [random.randrange(0, self.number_buckets - 1)
-                      for _ in range(self.number_features)]  # [0, p-1]
+                      for _ in range(self.number_hash_functions)]  # [0, p-1]
 
     def hash(self, feature, i):
         resid = (feature * self.hash1[i] + self.hash2[i]) % self.number_buckets
@@ -60,7 +63,7 @@ class FeatureCategorialHash():
 
     def insert(self, x):
         for i, feature in enumerate(x):
-            for j in range(self.number_features):
+            for j in range(self.number_hash_functions):
                 bucket = self.hash(feature, j)
                 self.count[i][j][bucket] += 1
                 self.total_count[i][j][bucket] += 1
@@ -70,7 +73,7 @@ class FeatureCategorialHash():
         for i, feature in enumerate(x):
             min_count = float('inf')
             min_total_count = float('inf')
-            for j in range(self.number_features):
+            for j in range(self.number_hash_functions):
                 bucket = self.hash(feature, j)
                 min_count = min(min_count, self.count[i][j][bucket])
                 min_total_count = min(min_total_count, self.total_count[i][j][bucket])
@@ -79,13 +82,13 @@ class FeatureCategorialHash():
 
     def clear(self):
         self.count = [[[0 for _ in range(self.number_buckets)] for _ in range(
-            self.number_features)] for _ in range(self.number_features)]
+            self.number_hash_functions)] for _ in range(self.number_features)]
         self.total_count = [[[0 for _ in range(self.number_buckets)] for _ in range(
-            self.number_features)] for _ in range(self.number_features)]
+            self.number_hash_functions)] for _ in range(self.number_features)]
 
     def lower(self, factor):
         for i in range(self.number_features):
-            for j in range(self.number_features):
+            for j in range(self.number_hash_functions):
                 for k in range(self.number_buckets):
                     self.count[i][j][k] *= factor
 
