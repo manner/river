@@ -116,20 +116,20 @@ class FeatureNumericalHash():
                 else:
                     current_feature = self.normalize(current_feature, min_feature, max_feature)
 
-            bucket = hash(current_feature)
+            bucket = self.hash(current_feature)
             self.count[i][bucket] += 1
             self.total_count[i][bucket] += 1
 
     def get_count(self, x, t):
         result = 0
-        for (_, feature) in x.items():
+        for i, (_, feature) in enumerate(x.items()):
             bucket = self.hash(feature)
-            result += counts_to_anom(self.total_count[bucket], self.count[bucket], t)
+            result += counts_to_anom(self.total_count[i][bucket], self.count[i][bucket], t)
         return result
 
     def hash(self, value):
         # this is currently more simplified than the cpp implementation
-        return floor(value * self.number_buckets) % self.number_buckets
+        return floor(value * (self.number_buckets - 1)) % self.number_buckets
 
     def normalize(self, value, min, max):
         return (value - min) / (max - min)
