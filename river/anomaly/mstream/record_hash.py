@@ -25,36 +25,28 @@ class RecordHash():
             self.number_hash_functions, self.number_buckets, self.number_categorical_features)
         self.clear()
 
-    def insert(self, x):
-        # divide x into categorical and numerical
-        x_categorical = compress(x, self.is_categorical)
-        x_numerical = compress(x, self.is_numerical)
-
+    def insert(self, x_numerical, x_categorical):
         for i in range(self.number_hash_functions):
-            bucket_categorical = self.categorical_hash.hash(x_categorical, i)
             bucket_numerical = self.numerical_hash.hash(x_numerical, i)
+            bucket_categorical = self.categorical_hash.hash(x_categorical, i)
 
             bucket = (bucket_categorical + bucket_numerical) % self.number_buckets
             self.count[i][bucket] += 1
             self.total_count[i][bucket] += 1
 
-    def get_count(self, x, t):
-        # TODO: Extract duplicate code from insert and get_count
-        x_categorical = compress(x, self.is_categorical)
-        x_numerical = compress(x, self.is_numerical)
-
+    def get_count(self, x_numerical, x_categorical, timestamp):
         min_count = float('inf')  # init with max value
         min_total_count = float('inf')
 
         for i in range(self.number_hash_functions):
-            bucket_categorical = self.categorical_hash.hash(x_categorical, i)
             bucket_numerical = self.numerical_hash.hash(x_numerical, i)
-            bucket = (bucket_categorical + bucket_numerical) % self.number_buckets
+            bucket_categorical = self.categorical_hash.hash(x_categorical, i)
+            bucket = (bucket_numerical + bucket_categorical) % self.number_buckets
 
             min_count = min(min_count, self.count[i][bucket])
             min_total_count = min(min_total_count, self.total_count[i][bucket])
 
-        return counts_to_anom(min_total_count, min_count, t)
+        return counts_to_anom(min_total_count, min_count, timestamp)
 
     def clear(self):
         self.count = [[0 for _ in range(self.number_buckets)]

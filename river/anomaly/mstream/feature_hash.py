@@ -23,20 +23,18 @@ class FeatureHash():
         self.categorial_hash = FeatureCategorialHash(
             number_buckets, self.number_hash_functions, number_categorical_features, seed)
 
-    def insert(self, x):
-        # categorial hash
-        self.categorial_hash.insert(x)
-        # real-value hash
-        self.numerical_hash.insert(x)
+    def insert(self, x_numerical, x_categorical):
+        self.numerical_hash.insert(x_numerical)
+        self.categorial_hash.insert(x_categorical)
 
-    def get_count(self, x, t):
-        result = self.numerical_hash.get_count(x, t)
-        result += self.categorial_hash.get_count(x, t)
+    def get_count(self, x_numerical, x_categorical, timestamp):
+        result = self.numerical_hash.get_count(x_numerical, timestamp)
+        result += self.categorial_hash.get_count(x_categorical, timestamp)
         return result
 
     def lower(self, factor):
-        self.categorial_hash.lower(factor)
         self.numerical_hash.lower(factor)
+        self.categorial_hash.lower(factor)
 
 
 class FeatureCategorialHash():
