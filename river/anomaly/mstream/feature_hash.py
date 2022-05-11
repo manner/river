@@ -62,7 +62,7 @@ class FeatureCategorialHash():
             return resid
 
     def insert(self, x):
-        for i, feature in enumerate(x):
+        for i, (_, feature) in enumerate(x.items()):
             for j in range(self.number_hash_functions):
                 bucket = self.hash(feature, j)
                 self.count[i][j][bucket] += 1
@@ -70,7 +70,7 @@ class FeatureCategorialHash():
 
     def get_count(self, x, t):
         result = 0
-        for i, feature in enumerate(x):
+        for i, (_, feature) in enumerate(x.items()):
             min_count = float('inf')
             min_total_count = float('inf')
             for j in range(self.number_hash_functions):
@@ -101,20 +101,20 @@ class FeatureNumericalHash():
 
     def insert(self, x):
         first = True
-        for i, feature in enumerate(x):
+        for i, (_, feature) in enumerate(x.items()):
             current_feature = log10(1 + feature)
             if first:
                 first = False
-                min = current_feature
-                max = current_feature
+                min_feature = current_feature
+                max_feature = current_feature
                 current_feature = 0
             else:
-                min = min(min, current_feature)
-                max = max(max, current_feature)
-                if min == max:
+                min_feature = min(min_feature, current_feature)
+                max_feature = max(max_feature, current_feature)
+                if min_feature == max_feature:
                     current_feature = 0
                 else:
-                    current_feature = self.normalize(current_feature, min, max)
+                    current_feature = self.normalize(current_feature, min_feature, max_feature)
 
             bucket = hash(current_feature)
             self.count[i][bucket] += 1
@@ -122,7 +122,7 @@ class FeatureNumericalHash():
 
     def get_count(self, x, t):
         result = 0
-        for feature in x:
+        for (_, feature) in x.items():
             bucket = self.hash(feature)
             result += counts_to_anom(self.total_count[bucket], self.count[bucket], t)
         return result

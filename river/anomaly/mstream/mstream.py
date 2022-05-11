@@ -28,9 +28,10 @@ class MStream(AnomalyDetector):
         self.feature_hash = FeatureHash(number_buckets, number_hash_functions)
         self.factor = factor
         self.is_empty = True
+        self.timestamp_key = 'timestamp'
 
     def learn_one(self, x):
-        ts = x.get_timestamp()  # not sure how to get timestamp from observation
+        ts = self.get_timestamp(x)  # not sure how to get timestamp from observation
         if self.is_empty or ts > self.current_time:
             self.record_hash.lower(self.factor)
             self.feature_hash.lower(self.factor)
@@ -45,3 +46,6 @@ class MStream(AnomalyDetector):
         score = self.record_hash.get_count(x, ts)  # no params for now, working on this
         score += self.feature_hash.get_count(x, ts)
         return log(1 + score)
+
+    def get_timestamp(self, x):
+        return x[self.timestamp_key]
