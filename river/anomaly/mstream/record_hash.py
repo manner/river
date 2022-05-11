@@ -89,15 +89,11 @@ class RecordCategorialHash():
                 current_category[key] = 1
             value = current_category[key]
             resid = (resid + key * value) % self.num_buckets
-        self.bucket_cat = resid + (self.num_buckets if resid < 0 else 0)
+        return resid + (self.num_buckets if resid < 0 else 0)
 
     def clear(self):
-        self.bucket_cat = 0
         self.categorial_count = [[0 for _ in range(self.num_buckets)]
                                  for _ in range(self.number_features)]
-
-    def get_count(self):
-        return self.bucket_cat
 
 
 class RecordNumericalHash():
@@ -118,12 +114,9 @@ class RecordNumericalHash():
                 bitset += "1"
             else:
                 bitset += "0"
-        self.bucket_num = int(bitset, 2)
+        bucket_num = int(bitset, 2)
+        return bucket_num
 
     def clear(self):
-        self.bucket_num = 0
         self.numerical_count = [[[0 for _ in range(self.number_buckets)] for _ in range(
             self.k)] for _ in range(self.number_hash_functions)]
-
-    def get_count(self):
-        return self.bucket_num
