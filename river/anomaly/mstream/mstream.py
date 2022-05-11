@@ -16,13 +16,12 @@ class MStream(AnomalyDetector):
 
     """
 
-    def __init__(self, number_buckets=1024, factor=0.8):
+    def __init__(self, feature_types, number_buckets=1024, factor=0.8):
         # is_categorical is just a vector that says True if a feature is categorical, and false if it's numerical
         # this assumes an entry will always have the same order in the features
         # ex. [True, False, False, True, False]
-        is_categorical = [True, False, False, True, False]
-        self.record_hash = RecordHash(number_buckets, is_categorical)
-        self.feature_hash = FeatureHash(number_buckets)
+        self.record_hash = RecordHash(number_buckets, feature_types)
+        self.feature_hash = FeatureHash(number_buckets) # todo ad feature_types parameter
         self.factor = factor
         self.is_empty = True
 
