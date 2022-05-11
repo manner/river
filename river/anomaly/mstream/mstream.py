@@ -29,6 +29,7 @@ class MStream(AnomalyDetector):
         self.feature_hash = FeatureHash(number_buckets, number_hash_functions)
         self.factor = factor
         self.is_empty = True
+        self.timestamp_key = timestamp_key
 
     def learn_one(self, x):
         ts = self.get_timestamp(x)  # not sure how to get timestamp from observation
