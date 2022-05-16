@@ -1,28 +1,27 @@
 import math
-import random
 from itertools import compress
 import numpy as np
 
 
 def counts_to_anom(tot, cur, cur_t):
+    if tot == 0:
+        return 0
     cur_mean = tot / cur_t
     sqerr = pow(max(0, cur - cur_mean), 2)
     return sqerr / cur_mean + sqerr / (cur_mean * max(1, cur_t - 1))
 
 
 class RecordHash():
-    def __init__(self, is_categorical, number_buckets, number_hash_functions):
-        self.is_categorical = is_categorical
-        self.is_numerical = [not feature for feature in is_categorical]
+    def __init__(self, number_buckets, number_hash_functions, feature_types):
         # self.num_rows = num_rows number of hash functions, we will just use 2 for now
         self.number_buckets = number_buckets
-        self.number_numerical_features = len(self.is_numerical)
-        self.number_categorical_features = len(self.is_categorical)
+        number_numerical_features = feature_types.count(False)
+        number_categorical_features = feature_types.count(True)
         self.number_hash_functions = number_hash_functions  # num_rows in original code
         self.numerical_hash = RecordNumericalHash(
-            self.number_hash_functions, self.number_buckets, self.number_numerical_features)
+            self.number_hash_functions, self.number_buckets, number_numerical_features)
         self.categorical_hash = RecordCategorialHash(
-            self.number_hash_functions, self.number_buckets, self.number_categorical_features)
+            self.number_hash_functions, self.number_buckets, number_categorical_features)
         self.clear()
 
     def insert(self, x_numerical, x_categorical):
@@ -75,9 +74,9 @@ class RecordCategorialHash():
         for i in range(self.number_categorical_features):
             current_category = self.cat_recordhash[i]
             key = hash(x_categorical[i])
-            if current_category[key]:
+            try:
                 current_category[key] += 1
-            else:
+            except(KeyError):
                 current_category[key] = 1
             value = current_category[key]
             resid = (resid + key * value) % self.number_buckets
@@ -91,6 +90,7 @@ class RecordCategorialHash():
 class RecordNumericalHash():
     def __init__(self, number_hash_functions, number_buckets, number_numerical_features):
         self.number_numerical_features = number_numerical_features
+        print("Number numerical features ", number_numerical_features)
         self.number_buckets = number_buckets
         self.number_hash_functions = number_hash_functions  # num_rows in original code
         self.k = math.ceil(math.log2(self.number_buckets))

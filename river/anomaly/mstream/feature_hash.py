@@ -8,15 +8,19 @@ import random
 
 
 def counts_to_anom(tot, cur, cur_t):
+    if tot == 0:
+        return 0
     cur_mean = tot / cur_t
     sqerr = pow(max(0, cur - cur_mean), 2)
-    return sqerr / cur_mean + sqerr / (cur_mean * max(1, cur_t - 1))
+    a = sqerr / cur_mean
+    b = sqerr / (cur_mean * max(1, cur_t - 1))
+    return a + b
 
 
 class FeatureHash():
-    def __init__(self, number_buckets, number_hash_functions, seed=datetime.now()):
-        number_numerical_features = 5  # tbd
-        number_categorical_features = 5  # tbd
+    def __init__(self, number_buckets, number_hash_functions, feature_types, seed=datetime.now()):
+        number_numerical_features = feature_types.count(False)
+        number_categorical_features = feature_types.count(True)
         self.number_hash_functions = number_hash_functions
         self.numerical_hash = FeatureNumericalHash(
             number_buckets, number_numerical_features)
@@ -29,8 +33,10 @@ class FeatureHash():
 
     def get_count(self, x_numerical, x_categorical, timestamp):
         result = self.numerical_hash.get_count(x_numerical, timestamp)
-        result += self.categorial_hash.get_count(x_categorical, timestamp)
-        return result
+        print("Numerical FeatureHash", result)
+        b = self.categorial_hash.get_count(x_categorical, timestamp)
+        print("Categorical FeatureHash", b)
+        return result + b
 
     def lower(self, factor):
         self.numerical_hash.lower(factor)
@@ -95,40 +101,54 @@ class FeatureNumericalHash():
     def __init__(self, number_buckets, number_features):
         self.number_buckets = number_buckets
         self.number_features = number_features
+        self.number_observations = 0
         self.clear()
 
     def insert(self, x):
-        first = True
         for i, feature in enumerate(x):
             current_feature = log10(1 + feature)
-            if first:
-                first = False
-                min_feature = current_feature
-                max_feature = current_feature
+            if self.number_observations == 0:
+                self.min_features[i] = current_feature
+                self.max_features[i] = current_feature
                 current_feature = 0
             else:
-                min_feature = min(min_feature, current_feature)
-                max_feature = max(max_feature, current_feature)
-                if min_feature == max_feature:
+                self.min_features[i] = min(self.min_features[i], current_feature)
+                self.max_features[i] = max(self.max_features[i], current_feature)
+                if self.min_features[i] == self.max_features[i]:
                     current_feature = 0
                 else:
-                    current_feature = self.normalize(current_feature, min_feature, max_feature)
+                    current_feature = self.normalize(
+                        current_feature, self.min_features[i], self.max_features[i])
 
             bucket = self.hash(current_feature)
-            print(i, bucket, self.number_features, current_feature)
+            # print(i, bucket, self.number_features, current_feature)
             self.count[i][bucket] += 1
             self.total_count[i][bucket] += 1
+        self.number_observations += 1
 
     def get_count(self, x, t):
         result = 0
         for i, feature in enumerate(x):
-            bucket = self.hash(feature)
+            current_feature = log10(1 + feature)
+            print("    ", current_feature)
+            if self.min_features[i] == self.max_features[i]:
+                current_feature = 0
+            else:
+                print("normalizeing ", current_feature, " min: ",
+                      self.min_features[i], " max: ", self.max_features[i])
+                current_feature = self.normalize(
+                    current_feature, self.min_features[i], self.max_features[i])
+            bucket = self.hash(current_feature)
+            print("       after: ", current_feature, " ", bucket)
+
             result += counts_to_anom(self.total_count[i][bucket], self.count[i][bucket], t)
         return result
 
     def hash(self, value):
-        # this is currently more simplified than the cpp implementation
-        return floor(value * (self.number_buckets - 1)) % self.number_buckets
+        bucket = floor(value * (self.number_buckets - 1))
+        if bucket < 0:
+            bucket = (bucket % self.number_buckets + self.number_buckets) % self.number_buckets
+        return bucket
 
     def normalize(self, value, min, max):
         return (value - min) / (max - min)
@@ -137,6 +157,8 @@ class FeatureNumericalHash():
         self.count = [[0 for _ in range(self.number_buckets)] for _ in range(self.number_features)]
         self.total_count = [[0 for _ in range(self.number_buckets)]
                             for _ in range(self.number_features)]
+        self.min_features = [float('inf') for _ in range(self.number_features)]
+        self.max_features = [float('-inf') for _ in range(self.number_features)]
 
     def lower(self, factor):
         for i in range(self.number_features):
