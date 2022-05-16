@@ -121,7 +121,6 @@ class FeatureNumericalHash():
                         current_feature, self.min_features[i], self.max_features[i])
 
             bucket = self.hash(current_feature)
-            # print(i, bucket, self.number_features, current_feature)
             self.count[i][bucket] += 1
             self.total_count[i][bucket] += 1
         self.number_observations += 1
@@ -130,17 +129,12 @@ class FeatureNumericalHash():
         result = 0
         for i, feature in enumerate(x):
             current_feature = log10(1 + feature)
-            print("    ", current_feature)
             if self.min_features[i] == self.max_features[i]:
                 current_feature = 0
             else:
-                print("normalizeing ", current_feature, " min: ",
-                      self.min_features[i], " max: ", self.max_features[i])
                 current_feature = self.normalize(
                     current_feature, self.min_features[i], self.max_features[i])
             bucket = self.hash(current_feature)
-            print("       after: ", current_feature, " ", bucket)
-
             result += counts_to_anom(self.total_count[i][bucket], self.count[i][bucket], t)
         return result
 
