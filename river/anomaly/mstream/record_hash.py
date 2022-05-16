@@ -73,7 +73,7 @@ class RecordCategorialHash():
         resid = 0
         for k in range(self.number_categorical_features):
             resid = (resid + self.categorial_count[i][k] * x_categorical[k]) % self.number_buckets
-        return resid + (self.number_buckets if resid < 0 else 0)
+        return int(resid + (self.number_buckets if resid < 0 else 0))
 
     def clear(self):
         self.categorial_count = [[random.randrange(0, self.number_buckets - 1) + 1 if i < self.number_categorical_features - 1
@@ -89,20 +89,20 @@ class RecordNumericalHash():
         self.number_buckets = number_buckets
         self.number_hash_functions = number_hash_functions  # num_rows in original code
         self.k = math.ceil(math.log2(self.number_buckets))
-        self.rand_vectors = np.random.normal(0, 1, size=(self.k, number_numerical_features))
+        self.rand_vectors = [np.random.normal(0, 1, size=(
+            self.k, number_numerical_features)) for _ in range(number_hash_functions)]
         self.clear()
 
     def hash(self, x_numerical, i):
         x_numerical_vector = np.array(x_numerical)
         bitset = ""
-        for i in range(self.k):
-            dot_product = np.dot(x_numerical_vector, self.rand_vectors[i].T)
+        for j in range(self.k):
+            dot_product = np.dot(x_numerical_vector, self.rand_vectors[i][j].T)
             if dot_product > 0:
                 bitset += "1"
             else:
                 bitset += "0"
-        bucket_num = int(bitset, 2)
-        return bucket_num
+        return int(bitset, 2)
 
     def clear(self):
         self.numerical_count = [[[0 for _ in range(self.number_buckets)] for _ in range(

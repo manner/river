@@ -59,7 +59,7 @@ class FeatureCategorialHash():
                       for _ in range(self.number_hash_functions)]  # [0, p-1]
 
     def hash(self, feature, i):
-        resid = (feature * self.hash1[i] + self.hash2[i]) % self.number_buckets
+        resid = int(feature * self.hash1[i] + self.hash2[i]) % self.number_buckets
         if resid < 0:
             return resid + self.number_buckets
         else:
@@ -129,11 +129,14 @@ class FeatureNumericalHash():
         result = 0
         for i, feature in enumerate(x):
             current_feature = log10(1 + feature)
-            if self.min_features[i] == self.max_features[i]:
+            if self.number_observations == 0:
                 current_feature = 0
             else:
-                current_feature = self.normalize(
-                    current_feature, self.min_features[i], self.max_features[i])
+                if self.min_features[i] == self.max_features[i]:
+                    current_feature = 0
+                else:
+                    current_feature = self.normalize(
+                        current_feature, self.min_features[i], self.max_features[i])
             bucket = self.hash(current_feature)
             result += counts_to_anom(self.total_count[i][bucket], self.count[i][bucket], t)
         return result
