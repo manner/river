@@ -35,13 +35,14 @@ def evaluate(stream, model, n_wait=1000, verbose=False):
     model_name = "mstream"
     for i, (x, y) in enumerate(stream):
         # Predict
-        print(x)
         y_pred = model.score_one(x)
+        print(y_pred)
         # Update metrics and results
-        acc.update(y_true=y, y_pred=y_pred)
-        acc_rolling.update(y_true=y, y_pred=y_pred)
-        kappa.update(y_true=y, y_pred=y_pred)
-        kappa_rolling.update(y_true=y, y_pred=y_pred)
+        y_value = list(y.values())[0]
+        acc.update(y_true=y_value, y_pred=y_pred)
+        acc_rolling.update(y_true=y_value, y_pred=y_pred)
+        kappa.update(y_true=y_value, y_pred=y_pred)
+        kappa_rolling.update(y_true=y_value, y_pred=y_pred)
         if i % n_wait == 0 and i > 0:
             if verbose:
                 print_progress(i, acc, kappa)

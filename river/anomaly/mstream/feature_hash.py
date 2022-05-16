@@ -138,6 +138,7 @@ class FeatureNumericalHash():
                     current_feature = self.normalize(
                         current_feature, self.min_features[i], self.max_features[i])
             bucket = self.hash(current_feature)
+            print(f"tot: {self.total_count[i]}, bucket: {bucket}")
             result += counts_to_anom(self.total_count[i][bucket], self.count[i][bucket], t)
         return result
 
