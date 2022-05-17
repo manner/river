@@ -10,7 +10,9 @@ def counts_to_anom(tot, cur, cur_t):
         return 0
     cur_mean = tot / cur_t
     sqerr = pow(max(0, cur - cur_mean), 2)
-    return sqerr / cur_mean + sqerr / (cur_mean * max(1, cur_t - 1))
+    a = sqerr / cur_mean
+    b = sqerr / (cur_mean * max(1, cur_t - 1))
+    return a + b
 
 
 class RecordHash():
@@ -29,7 +31,6 @@ class RecordHash():
         for i in range(self.number_hash_functions):
             bucket_numerical = self.numerical_hash.hash(x_numerical, i)
             bucket_categorical = self.categorical_hash.hash(x_categorical, i)
-            print(bucket_numerical, bucket_categorical)
             bucket = (bucket_categorical + bucket_numerical) % self.number_buckets
             self.count[i][bucket] += 1
             self.total_count[i][bucket] += 1
@@ -45,9 +46,8 @@ class RecordHash():
 
             min_count = min(min_count, self.count[i][bucket])
             min_total_count = min(min_total_count, self.total_count[i][bucket])
-            print(" min_count: ", min_count, ", min_total_count: ", min_total_count)
-
-        return counts_to_anom(min_total_count, min_count, timestamp)
+        count = counts_to_anom(min_total_count, min_count, timestamp)
+        return count
 
     def clear(self):
         self.count = [[0 for _ in range(self.number_buckets)]
@@ -73,7 +73,8 @@ class RecordCategorialHash():
         resid = 0
         for k in range(self.number_categorical_features):
             resid = (resid + self.categorial_count[i][k] * x_categorical[k]) % self.number_buckets
-        return int(resid + (self.number_buckets if resid < 0 else 0))
+        hashed_result = int(resid + (self.number_buckets if resid < 0 else 0))
+        return hashed_result
 
     def clear(self):
         self.categorial_count = [[random.randrange(0, self.number_buckets - 1) + 1 if i < self.number_categorical_features - 1
@@ -85,7 +86,6 @@ class RecordCategorialHash():
 class RecordNumericalHash():
     def __init__(self, number_hash_functions, number_buckets, number_numerical_features):
         self.number_numerical_features = number_numerical_features
-        print("Number numerical features ", number_numerical_features)
         self.number_buckets = number_buckets
         self.number_hash_functions = number_hash_functions  # num_rows in original code
         self.k = math.ceil(math.log2(self.number_buckets))

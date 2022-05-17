@@ -47,7 +47,6 @@ class MStream(AnomalyDetector):
     def score_one(self, x):
         (timestamp, x_numerical, x_categorical) = self.get_values(x)
         score = self.record_hash.get_count(x_numerical, x_categorical, timestamp)
-        print("RecordHash", score)
         score += self.feature_hash.get_count(x_numerical, x_categorical, timestamp)
         return log(1 + score)
 
@@ -57,7 +56,6 @@ class MStream(AnomalyDetector):
         values = values[:-1]
         x_numerical = list(compress(values, self.numerical_features))
         x_categorical = list(compress(values, self.categorial_features))
-        print("TEST ", x_numerical, x_categorical)
         return (timestamp, x_numerical, x_categorical)
 
     def get_timestamp(self, x):

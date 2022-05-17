@@ -23,8 +23,8 @@ dataset = "elec"
 
 def print_progress(sample_id, acc, kappa):
     print(f'Samples processed: {sample_id}')
-    print(acc)
-    print(kappa)
+    print(f'Accuracy: {acc}')
+    print(f'Kappa: {kappa}')
 
 def evaluate(stream, model, n_wait=1000, verbose=False):
     acc = metrics.Accuracy()
@@ -36,7 +36,6 @@ def evaluate(stream, model, n_wait=1000, verbose=False):
     for i, (x, y) in enumerate(stream):
         # Predict
         y_pred = model.score_one(x)
-        print(y_pred)
         # Update metrics and results
         y_value = list(y.values())[0]
         acc.update(y_true=y_value, y_pred=y_pred)
