@@ -134,11 +134,17 @@ class FeatureNumericalHash():
             else:
                 if self.min_features[i] == self.max_features[i]:
                     current_feature = 0
+                elif current_feature > self.max_features[i]:
+                    current_feature = 1
+                elif current_feature < self.min_features[i]:
+                    current_feature = 0
                 else:
+                    # print(
+                    # f"c: {current_feature}, min: {self.min_features[i]}, max: {self.max_features[i]}")
                     current_feature = self.normalize(
                         current_feature, self.min_features[i], self.max_features[i])
             bucket = self.hash(current_feature)
-            print(f"tot: {self.total_count[i]}, bucket: {bucket}")
+            # print(f"tot: {self.total_count[i]}, bucket: {bucket}, current: {current_feature}")
             result += counts_to_anom(self.total_count[i][bucket], self.count[i][bucket], t)
         return result
 
