@@ -1,6 +1,7 @@
 from datetime import datetime
 from math import floor, log10
 import random
+import sys
 
 # This is directly copied from the cpp implementation
 # I don't know exactly where this function is coming from, as it's not in the paper
@@ -33,9 +34,9 @@ class FeatureHash():
 
     def get_count(self, x_numerical, x_categorical, timestamp):
         result = self.numerical_hash.get_count(x_numerical, timestamp)
-        # print("Numerical FeatureHash", result)
+        print("Numerical FeatureHash", result)
         b = self.categorial_hash.get_count(x_categorical, timestamp)
-        # print("Categorical FeatureHash", b)
+        print("Categorical FeatureHash", b)
         return result + b
 
     def lower(self, factor):
@@ -44,22 +45,29 @@ class FeatureHash():
 
 
 class FeatureCategorialHash():
-    def __init__(self, number_buckets, number_hash_functions, number_features, seed):
-        random.seed(seed)
+    def __init__(self, number_buckets, number_hash_functions, number_features, s):
+        # random.seed('2022-05-18 14:15:26.845156')
+
+        seed = 1322998564246784757  # random.randrange(sys.maxsize)
+        self.rng = random.Random(seed)
+
+        print("Seed was: ", seed)
         self.number_buckets = number_buckets
         self.number_hash_functions = number_hash_functions
         self.number_features = number_features
         self.init_hash()
         self.clear()
+        print(seed)
 
     def init_hash(self):
-        self.hash1 = [random.randrange(1, self.number_buckets - 1)
-                      for _ in range(self.number_hash_functions)]  # [1, p-1]
-        self.hash2 = [random.randrange(0, self.number_buckets - 1)
-                      for _ in range(self.number_hash_functions)]  # [0, p-1]
+        self.hash1 = [[self.rng.randint(1, self.number_buckets - 1)
+                      for _ in range(self.number_hash_functions)] for _ in range(self.number_features)]  # [1, p-1]
+        self.hash2 = [[self.rng.randint(0, self.number_buckets - 1)
+                      for _ in range(self.number_hash_functions)] for _ in range(self.number_features)]  # [0, p-1]
 
-    def hash(self, feature, i):
-        resid = int(feature * self.hash1[i] + self.hash2[i]) % self.number_buckets
+    def hash(self, feature, feature_index, j):
+        resid = (int(feature) * self.hash1[feature_index][j] +
+                 self.hash2[feature_index][j]) % self.number_buckets
         if resid < 0:
             return resid + self.number_buckets
         else:
@@ -68,7 +76,7 @@ class FeatureCategorialHash():
     def insert(self, x):
         for i, feature in enumerate(x):
             for j in range(self.number_hash_functions):
-                bucket = self.hash(feature, j)
+                bucket = self.hash(feature, i, j)
                 self.count[i][j][bucket] += 1
                 self.total_count[i][j][bucket] += 1
 
@@ -78,7 +86,7 @@ class FeatureCategorialHash():
             min_count = float('inf')
             min_total_count = float('inf')
             for j in range(self.number_hash_functions):
-                bucket = self.hash(feature, j)
+                bucket = self.hash(feature, i, j)
                 min_count = min(min_count, self.count[i][j][bucket])
                 min_total_count = min(min_total_count, self.total_count[i][j][bucket])
             result += counts_to_anom(min_total_count, min_count, t)
@@ -145,6 +153,7 @@ class FeatureNumericalHash():
                         current_feature, self.min_features[i], self.max_features[i])
             bucket = self.hash(current_feature)
             # print(f"tot: {self.total_count[i]}, bucket: {bucket}, current: {current_feature}")
+            # print(self.total_count[i][bucket], self.count[i][bucket], t)
             result += counts_to_anom(self.total_count[i][bucket], self.count[i][bucket], t)
         return result
 

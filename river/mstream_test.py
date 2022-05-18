@@ -28,7 +28,7 @@ def print_progress(sample_id, acc, kappa):
     print(f'Kappa: {kappa}')
 
 
-def evaluate(stream, model, n_wait=1000, verbose=True):
+def evaluate(f, stream, model, n_wait=1000, verbose=False):
     acc = metrics.Accuracy()
     acc_rolling = metrics.Rolling(metric=metrics.Accuracy(), window_size=n_wait)
     kappa = metrics.CohenKappa()
@@ -37,7 +37,12 @@ def evaluate(stream, model, n_wait=1000, verbose=True):
     model_name = "mstream"
     for i, (x, y) in enumerate(stream):
         # Predict
+        print('\n')
+        print(i)
+        model.learn_one(x)
         y_pred = model.score_one(x)
+        print(y_pred)
+        f.write(str(y_pred) + '\n')
         # Update metrics and results
         y_value = list(y.values())[0]
         acc.update(y_true=y_value, y_pred=y_pred)
@@ -50,7 +55,6 @@ def evaluate(stream, model, n_wait=1000, verbose=True):
             raw_results.append([model_name, i, acc.get(), acc_rolling.get(),
                                kappa.get(), kappa_rolling.get()])
         # Learn (train)
-        model.learn_one(x)
     print_progress(i, acc, kappa)
     return pd.DataFrame(raw_results, columns=['model', 'id', 'acc', 'acc_roll', 'kappa', 'kappa_roll'])
 
@@ -65,5 +69,6 @@ Y = pd.read_csv("./test_data_small/unsw_label_10k.txt")
 
 # Initialize models
 mstream = MStream(feature_types)
+f = open("scores.txt", 'w')
 
-results = evaluate(stream=iter_pandas(X=X, y=Y), model=mstream)
+results = evaluate(f, stream=iter_pandas(X=X, y=Y), model=mstream)

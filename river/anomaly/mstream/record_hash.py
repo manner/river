@@ -46,8 +46,9 @@ class RecordHash():
 
             min_count = min(min_count, self.count[i][bucket])
             min_total_count = min(min_total_count, self.total_count[i][bucket])
-        count = counts_to_anom(min_total_count, min_count, timestamp)
-        return count
+            # print(" min_count: ", min_count, ", min_total_count: ", min_total_count)
+
+        return counts_to_anom(min_total_count, min_count, timestamp)
 
     def clear(self):
         self.count = [[0 for _ in range(self.number_buckets)]
