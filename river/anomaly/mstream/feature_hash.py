@@ -7,8 +7,6 @@ import random
 
 
 def counts_to_anom(tot, cur, cur_t):
-    if tot == 0:
-        return 0
     cur_mean = tot / cur_t
     sqerr = pow(max(0, cur - cur_mean), 2)
     a = sqerr / cur_mean

@@ -1,5 +1,4 @@
 import math
-from itertools import compress
 import numpy as np
 import random
 from datetime import datetime
@@ -87,7 +86,7 @@ class RecordNumericalHash():
     def __init__(self, number_hash_functions, number_buckets, number_numerical_features):
         self.number_numerical_features = number_numerical_features
         self.number_buckets = number_buckets
-        self.number_hash_functions = number_hash_functions  # num_rows in original code
+        self.number_hash_functions = number_hash_functions
         self.k = math.ceil(math.log2(self.number_buckets))
         self.rand_vectors = [np.random.normal(0, 1, size=(
             self.k, number_numerical_features)) for _ in range(number_hash_functions)]
