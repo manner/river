@@ -3,7 +3,6 @@ from math import floor, log10
 import random
 
 # This is directly copied from the cpp implementation
-# I don't know exactly where this function is coming from, as it's not in the paper
 # TODO: This code shouldn't be duplicated in both feature and record hash
 
 
@@ -33,10 +32,8 @@ class FeatureHash():
 
     def get_count(self, x_numerical, x_categorical, timestamp):
         result = self.numerical_hash.get_count(x_numerical, timestamp)
-        # print("Numerical FeatureHash", result)
-        b = self.categorial_hash.get_count(x_categorical, timestamp)
-        # print("Categorical FeatureHash", b)
-        return result + b
+        result += self.categorial_hash.get_count(x_categorical, timestamp)
+        return result
 
     def lower(self, factor):
         self.numerical_hash.lower(factor)
@@ -139,12 +136,9 @@ class FeatureNumericalHash():
                 elif current_feature < self.min_features[i]:
                     current_feature = 0
                 else:
-                    # print(
-                    # f"c: {current_feature}, min: {self.min_features[i]}, max: {self.max_features[i]}")
                     current_feature = self.normalize(
                         current_feature, self.min_features[i], self.max_features[i])
             bucket = self.hash(current_feature)
-            # print(f"tot: {self.total_count[i]}, bucket: {bucket}, current: {current_feature}")
             result += counts_to_anom(self.total_count[i][bucket], self.count[i][bucket], t)
         return result
 
