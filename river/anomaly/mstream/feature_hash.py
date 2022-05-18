@@ -34,9 +34,9 @@ class FeatureHash():
 
     def get_count(self, x_numerical, x_categorical, timestamp):
         result = self.numerical_hash.get_count(x_numerical, timestamp)
-        print("Numerical FeatureHash", result)
+        # print("Numerical FeatureHash", result)
         b = self.categorial_hash.get_count(x_categorical, timestamp)
-        print("Categorical FeatureHash", b)
+        # print("Categorical FeatureHash", b)
         return result + b
 
     def lower(self, factor):

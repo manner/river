@@ -80,7 +80,7 @@ model = mstream
 f = open("scores.txt", 'w')
 
 # results = evaluate(f, stream=iter_pandas(X=X, y=Y), model=mstream)
-XSS = X.to_dict('records')
+XSS = X.T.to_dict().values()
 # print(XSS)
 start = time.time()
 for x in XSS:

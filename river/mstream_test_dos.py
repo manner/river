@@ -5,8 +5,8 @@ import pandas as pd
 import time
 from river.utils import numpy2dict
 
-unswnumeric_size = 39
-unswcateg_size = 7
+unswnumeric_size = 76
+unswcateg_size = 2
 feature_types = []
 headers = []
 feature_i = 0
@@ -80,7 +80,7 @@ model = mstream
 f = open("scores.txt", 'w')
 
 # results = evaluate(f, stream=iter_pandas(X=X, y=Y), model=mstream)
-XSS = X.to_dict('records')
+XSS = X.T.to_dict().values()
 # print(XSS)
 start = time.time()
 for x in XSS:
