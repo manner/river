@@ -2,16 +2,7 @@ import math
 import numpy as np
 import random
 from datetime import datetime
-
-
-def counts_to_anom(tot, cur, cur_t):
-    if tot == 0:
-        return 0
-    cur_mean = tot / cur_t
-    sqerr = pow(max(0, cur - cur_mean), 2)
-    a = sqerr / cur_mean
-    b = sqerr / (cur_mean * max(1, cur_t - 1))
-    return a + b
+from .utils import counts_to_anom
 
 
 class RecordHash():
@@ -45,8 +36,7 @@ class RecordHash():
 
             min_count = min(min_count, self.count[i][bucket])
             min_total_count = min(min_total_count, self.total_count[i][bucket])
-        count = counts_to_anom(min_total_count, min_count, timestamp)
-        return count
+        return counts_to_anom(min_total_count, min_count, timestamp)
 
     def clear(self):
         self.count = [[0 for _ in range(self.number_buckets)]
