@@ -10,14 +10,26 @@ __all__ = ["MStream"]
 
 
 class MStream(AnomalyDetector):
-    """
-    MStream implementation
+    """ MStream
 
-    Description:
+    MStream detects group anomalies from a multi-aspect data stream in constant time and memory.  
+
+    As MStream works on multi-aspect data and differentiates between numerical and categorical features,
+    this information needs to be supplied when initializing MStream.
+
 
     Parameters:
-
-    Examples:
+    ----------
+    feature_types
+        Boolean list of all feature types. Categorical Features are represented as True, Numerical Features as False. 
+    number_buckets
+        Number of buckets used for the hash functions. Default is 1024.
+    factor
+        Temporcal decay factor. Default is 0.8.
+    number_hash_functions
+        Specifies the number of random hash functions used. Default is 2.
+    timestamp_key
+        Sets the key of the timestamp field in the supplied data. Default is 'timestamp'. 
 
     """
 
