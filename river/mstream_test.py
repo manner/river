@@ -72,25 +72,33 @@ df_numeric = pd.read_csv("./test_data_small/unswnumeric_100000.txt", header=None
 df_time = pd.read_csv("./test_data_small/unswtime_100000.txt", header=None)
 X = pd.concat([df_numeric, df_categ, df_time], axis=1)
 X.columns = headers
-Y = pd.read_csv("./test_data_small/unsw_label_100000.txt")
+Y = pd.read_csv("./test_data_small/unsw_label_100000.txt", header=None)
 
 # Initialize models
 mstream = MStream(feature_types, factor=0.4, timestamp_key='timestamp')
 model = mstream
-f = open("scores.txt", 'w')
 
 # results = evaluate(f, stream=iter_pandas(X=X, y=Y), model=mstream)
 XSS = X.to_dict('records')
+YSS = Y.to_dict('records')
 # print(XSS)
 start = time.time()
-for x in XSS:
+results = []
+auc = metrics.ROCAUC()
+print(YSS)
+print(len(YSS))
+for i, x in enumerate(XSS):
     # x = numpy2dict(xs)
     # print(xs)
     # print(x)
-    model.learn_one(x)
     y_pred = model.score_one(x)
-    f.write(str(y_pred) + '\n')
+    model.learn_one(x)
+    results.append(y_pred)
+    auc = auc.update(YSS[i], y_pred)
 end = time.time()
 print(end - start)
-
+print(auc)
+f = open("scores.txt", 'w')
+for result in results:
+    f.write(str(result) + '\n')
 f.close()
